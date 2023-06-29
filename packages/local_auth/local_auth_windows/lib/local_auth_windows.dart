@@ -65,4 +65,8 @@ class LocalAuthWindows extends LocalAuthPlatform {
   /// Always returns false as this method is not supported on Windows.
   @override
   Future<bool> stopAuthentication() async => false;
+
+  @override
+  Future<bool> isValidBiometricAuthorized() async =>
+      _api.isValidBiometricAuthorized();
 }

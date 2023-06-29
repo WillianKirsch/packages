@@ -73,4 +73,8 @@ class LocalAuthentication {
   /// Returns a list of enrolled biometrics.
   Future<List<BiometricType>> getAvailableBiometrics() =>
       LocalAuthPlatform.instance.getEnrolledBiometrics();
+
+  /// Return false if user change biometric value you must to authorize the new biometric.
+  Future<bool> isValidBiometricAuthorized() async =>
+      LocalAuthPlatform.instance.isValidBiometricAuthorized();
 }

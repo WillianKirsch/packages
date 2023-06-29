@@ -114,6 +114,10 @@ class LocalAuthAndroid extends LocalAuthPlatform {
   Future<bool> isDeviceSupported() async => _api.isDeviceSupported();
 
   @override
+  Future<bool> isValidBiometricAuthorized() async =>
+      _api.isValidBiometricAuthorized();
+
+  @override
   Future<bool> stopAuthentication() async => _api.stopAuthentication();
 
   AuthStrings _pigeonStringsFromAuthMessages(

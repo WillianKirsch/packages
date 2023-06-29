@@ -97,6 +97,10 @@ class LocalAuthIOS extends LocalAuthPlatform {
   @override
   Future<bool> stopAuthentication() async => false;
 
+  @override
+  Future<bool> isValidBiometricAuthorized() async =>
+      _api.isValidBiometricAuthorized();
+
   AuthStrings _pigeonStringsFromAuthMessages(
       String localizedReason, Iterable<AuthMessages> messagesList) {
     IOSAuthMessages? messages;

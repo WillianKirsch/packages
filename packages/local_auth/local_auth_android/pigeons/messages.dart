@@ -106,6 +106,9 @@ abstract class LocalAuthApi {
   /// Returns true if this device supports authentication.
   bool isDeviceSupported();
 
+  /// Returns false if user change biometric value you must to authorize the new biometric.
+  bool isValidBiometricAuthorized();
+
   /// Returns true if this device can support biometric authentication, whether
   /// any biometrics are enrolled or not.
   bool deviceCanSupportBiometrics();

@@ -4,6 +4,11 @@
 * Fixes stale ignore: prefer_const_constructors.
 * Updates minimum supported SDK version to Flutter 3.10/Dart 3.0.
 
+## 2.1.7
+
+* Added isValidBiometricAuthorized, should be used when you want to authorize register device biometric.
+* Change authorize method to invalidate when user change biometric device.
+
 ## 2.1.6
 
 * Updates iOS minimum version in README.

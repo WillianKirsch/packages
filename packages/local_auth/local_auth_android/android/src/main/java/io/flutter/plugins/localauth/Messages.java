@@ -640,6 +640,9 @@ public class Messages {
     /** Returns true if this device supports authentication. */
     @NonNull
     Boolean isDeviceSupported();
+    /** Returns false if user change biometric value you must to authorize the new biometric. */
+    @NonNull
+    Boolean isValidBiometricAuthorized();
     /**
      * Returns true if this device can support biometric authentication, whether any biometrics are
      * enrolled or not.
@@ -683,6 +686,27 @@ public class Messages {
                 ArrayList<Object> wrapped = new ArrayList<Object>();
                 try {
                   Boolean output = api.isDeviceSupported();
+                  wrapped.add(0, output);
+                } catch (Throwable exception) {
+                  ArrayList<Object> wrappedError = wrapError(exception);
+                  wrapped = wrappedError;
+                }
+                reply.reply(wrapped);
+              });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(
+                binaryMessenger, "dev.flutter.pigeon.LocalAuthApi.isValidBiometricAuthorized", getCodec());
+        if (api != null) {
+          channel.setMessageHandler(
+              (message, reply) -> {
+                ArrayList<Object> wrapped = new ArrayList<Object>();
+                try {
+                  Boolean output = api.isValidBiometricAuthorized();
                   wrapped.add(0, output);
                 } catch (Throwable exception) {
                   ArrayList<Object> wrappedError = wrapError(exception);

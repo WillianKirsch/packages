@@ -12,6 +12,9 @@ import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyPermanentlyInvalidatedException;
+import android.security.keystore.KeyProperties;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 import androidx.biometric.BiometricManager;
@@ -31,9 +34,21 @@ import io.flutter.plugins.localauth.Messages.AuthResultWrapper;
 import io.flutter.plugins.localauth.Messages.AuthStrings;
 import io.flutter.plugins.localauth.Messages.LocalAuthApi;
 import io.flutter.plugins.localauth.Messages.Result;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 
 /**
  * Flutter plugin providing access to local authentication.
@@ -44,6 +59,7 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
   private static final int LOCK_REQUEST_CODE = 221;
   private Activity activity;
   private AuthenticationHelper authHelper;
+  private static final String KEY_NAME = "da39a3ee5e6b4b0d3255bBef95601890afd80708";
 
   @VisibleForTesting final AtomicBoolean authInProgress = new AtomicBoolean(false);
 
@@ -129,6 +145,68 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
     }
   }
 
+  public @NonNull Boolean isValidBiometricAuthorized() {
+    try {
+      KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+      keyStore.load(null);
+      keyStore.deleteEntry(KEY_NAME);
+      return true;
+    } catch (KeyStoreException e) {
+      return false;
+    } catch (CertificateException e) {
+      return false;
+    } catch (IOException e) {
+      return false;
+    } catch (NoSuchAlgorithmException e) {
+      return false;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  private boolean keyIsSecure(SecretKey key,AuthCompletionHandler completionHandler) throws NoSuchPaddingException, NoSuchAlgorithmException {
+    Cipher cipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/"
+            + KeyProperties.BLOCK_MODE_CBC + "/"
+            + KeyProperties.ENCRYPTION_PADDING_PKCS7);
+
+    try {
+      cipher.init(Cipher.ENCRYPT_MODE, key);
+      return  true;
+    } catch (KeyPermanentlyInvalidatedException e){
+      completionHandler.onError("NotAuthorizedBiometric", "Key permanently invalidated");
+      return false;
+    }
+    catch (InvalidKeyException e) {
+      completionHandler.onError("NotAuthorizedBiometric", "Key Expired");
+      return false;
+    }
+  }
+
+  private SecretKey generateKey() throws Exception {
+    KeyGenerator keyGenerator = KeyGenerator.getInstance(
+            KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+
+    keyGenerator.init(new KeyGenParameterSpec.Builder(KEY_NAME,
+            KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+            .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
+            .setInvalidatedByBiometricEnrollment(true)
+            .setUserAuthenticationRequired(true)
+            .build());
+
+
+    SecretKey secretKey =  keyGenerator.generateKey();
+
+    return secretKey;
+  }
+
+  private SecretKey getSecretKey() throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+    KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+    // Before the keystore can be accessed, it must be loaded.
+    keyStore.load(null);
+    return ((SecretKey)keyStore.getKey(KEY_NAME, null));
+  }
+
   public void authenticate(
       @NonNull AuthOptions options,
       @NonNull AuthStrings strings,
@@ -177,8 +255,16 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
       @NonNull AuthStrings strings,
       boolean allowCredentials,
       @NonNull AuthCompletionHandler completionHandler) {
-    authHelper =
-        new AuthenticationHelper(
+    try {
+
+      SecretKey secretKey = getSecretKey();
+      if(secretKey == null){
+        secretKey = generateKey();
+      }
+
+      if(keyIsSecure(secretKey,completionHandler)){
+            authHelper =
+        new AuthenticationHelper(Ø
             lifecycle,
             (FragmentActivity) activity,
             options,
@@ -187,6 +273,11 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
             allowCredentials);
 
     authHelper.authenticate();
+      };
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   void onAuthenticationCompleted(Result<AuthResultWrapper> result, AuthResult value) {

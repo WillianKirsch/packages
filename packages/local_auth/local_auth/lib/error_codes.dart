@@ -27,3 +27,9 @@ const String permanentlyLockedOut = 'PermanentlyLockedOut';
 
 /// Indicates that the biometricOnly parameter can't be true on Windows
 const String biometricOnlyNotSupported = 'biometricOnlyNotSupported';
+
+/// When user change biometric and have to authenticate again.
+const String notAuthorizedBiometric = 'NotAuthorizedBiometric';
+
+// When unable to delete permanentKey
+const String unableToDeletePermanentKey = 'UnableToDeletePermanentKey';
