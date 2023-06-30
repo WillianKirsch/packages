@@ -1,6 +1,6 @@
 ## 1.0.33
 - Added PackageManager in native Android code, to correctly prioritize and identify available biometrics modes.
-- Added isValidBiometricAuthorized, should be used when you want to authorize register device biometric.
+- Added validateBiometricAuthorized, should be used when you want to authorize register device biometric.
 - Change authorize method to invalidate when user change biometric device.
 
 ## 1.0.32

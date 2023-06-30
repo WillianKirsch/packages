@@ -75,6 +75,6 @@ class LocalAuthentication {
       LocalAuthPlatform.instance.getEnrolledBiometrics();
 
   /// Return false if user change biometric value you must to authorize the new biometric.
-  Future<bool> isValidBiometricAuthorized() async =>
-      LocalAuthPlatform.instance.isValidBiometricAuthorized();
+  Future<void> validateBiometricAuthorized() async =>
+      LocalAuthPlatform.instance.validateBiometricAuthorized();
 }

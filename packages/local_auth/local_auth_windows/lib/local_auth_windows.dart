@@ -67,6 +67,6 @@ class LocalAuthWindows extends LocalAuthPlatform {
   Future<bool> stopAuthentication() async => false;
 
   @override
-  Future<bool> isValidBiometricAuthorized() async =>
-      _api.isValidBiometricAuthorized();
+  Future<void> validateBiometricAuthorized() async =>
+      _api.validateBiometricAuthorized();
 }

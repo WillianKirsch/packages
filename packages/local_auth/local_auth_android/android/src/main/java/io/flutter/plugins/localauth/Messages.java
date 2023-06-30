@@ -74,7 +74,10 @@ public class Messages {
     /** The user is locked out temporarily due to too many failed attempts. */
     ERROR_LOCKED_OUT_TEMPORARILY(7),
     /** The user is locked out until they log in another way due to too many failed attempts. */
-    ERROR_LOCKED_OUT_PERMANENTLY(8);
+    ERROR_LOCKED_OUT_PERMANENTLY(8),
+    /** Biometrics changed in device. */
+    UNABLE_TO_DELETE_PERMANENT_KEY(9),
+    NOT_AUTHORIZED_BIOMETRIC(10);
 
     final int index;
 
@@ -640,9 +643,9 @@ public class Messages {
     /** Returns true if this device supports authentication. */
     @NonNull
     Boolean isDeviceSupported();
-    /** Returns false if user change biometric value you must to authorize the new biometric. */
-    @NonNull
-    Boolean isValidBiometricAuthorized();
+    /** Validate if user change biometric value you must to authorize the new biometric. */
+    
+    void validateBiometricAuthorized(@NonNull Result<AuthResultWrapper> result);
     /**
      * Returns true if this device can support biometric authentication, whether any biometrics are
      * enrolled or not.
@@ -700,19 +703,25 @@ public class Messages {
       {
         BasicMessageChannel<Object> channel =
             new BasicMessageChannel<>(
-                binaryMessenger, "dev.flutter.pigeon.LocalAuthApi.isValidBiometricAuthorized", getCodec());
+                binaryMessenger, "dev.flutter.pigeon.LocalAuthApi.validateBiometricAuthorized", getCodec());
         if (api != null) {
-          channel.setMessageHandler(
+            channel.setMessageHandler(
               (message, reply) -> {
                 ArrayList<Object> wrapped = new ArrayList<Object>();
-                try {
-                  Boolean output = api.isValidBiometricAuthorized();
-                  wrapped.add(0, output);
-                } catch (Throwable exception) {
-                  ArrayList<Object> wrappedError = wrapError(exception);
-                  wrapped = wrappedError;
-                }
-                reply.reply(wrapped);
+                Result<AuthResultWrapper> resultCallback =
+                    new Result<AuthResultWrapper>() {
+                      public void success(AuthResultWrapper result) {
+                        wrapped.add(0, result);
+                        reply.reply(wrapped);
+                      }
+
+                      public void error(Throwable error) {
+                        ArrayList<Object> wrappedError = wrapError(error);
+                        reply.reply(wrappedError);
+                      }
+                    };
+
+                api.validateBiometricAuthorized(resultCallback);
               });
         } else {
           channel.setMessageHandler(null);

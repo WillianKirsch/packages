@@ -83,7 +83,6 @@ class DefaultLocalAuthPlatform extends LocalAuthPlatform {
       await _channel.invokeMethod<bool>('stopAuthentication') ?? false;
 
   @override
-  Future<bool> isValidBiometricAuthorized() async =>
-      (await _channel.invokeMethod<bool>('isValidBiometricAuthorized')) ??
-      false;
+  Future<void> validateBiometricAuthorized() =>
+      _channel.invokeMethod('validateBiometricAuthorized');
 }

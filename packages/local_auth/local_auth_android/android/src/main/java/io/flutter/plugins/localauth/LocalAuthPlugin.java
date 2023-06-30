@@ -145,22 +145,25 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
     }
   }
 
-  public @NonNull Boolean isValidBiometricAuthorized() {
+  public @NonNull void validateBiometricAuthorized(@NonNull Result<AuthResultWrapper> result) {
     try {
       KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
       keyStore.load(null);
       keyStore.deleteEntry(KEY_NAME);
-      return true;
-    } catch (KeyStoreException e) {
-      return false;
+      result.success(new AuthResultWrapper.Builder().setValue(AuthResult.SUCCESS).build());
+   } catch (KeyStoreException e) {
+    result.success(
+          new AuthResultWrapper.Builder().setValue(AuthResult.UNABLE_TO_DELETE_PERMANENT_KEY).build());
+      
     } catch (CertificateException e) {
-      return false;
+      result.success(
+          new AuthResultWrapper.Builder().setValue(AuthResult.UNABLE_TO_DELETE_PERMANENT_KEY).build());
     } catch (IOException e) {
-      return false;
+      result.success(
+          new AuthResultWrapper.Builder().setValue(AuthResult.UNABLE_TO_DELETE_PERMANENT_KEY).build());
     } catch (NoSuchAlgorithmException e) {
-      return false;
-    } catch (Exception e) {
-      return false;
+      result.success(
+          new AuthResultWrapper.Builder().setValue(AuthResult.UNABLE_TO_DELETE_PERMANENT_KEY).build());
     }
   }
 
@@ -173,11 +176,11 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
       cipher.init(Cipher.ENCRYPT_MODE, key);
       return  true;
     } catch (KeyPermanentlyInvalidatedException e){
-      completionHandler.complete(Messages.AuthResult.ERROR_LOCKED_OUT_PERMANENTLY);
+      completionHandler.complete(Messages.AuthResult.NOT_AUTHORIZED_BIOMETRIC);
       return false;
     }
     catch (InvalidKeyException e) {
-      completionHandler.complete(Messages.AuthResult.ERROR_LOCKED_OUT_TEMPORARILY);
+      completionHandler.complete(Messages.AuthResult.NOT_AUTHORIZED_BIOMETRIC);
       return false;
     }
   }

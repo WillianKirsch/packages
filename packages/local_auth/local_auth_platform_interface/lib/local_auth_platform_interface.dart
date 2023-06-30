@@ -89,10 +89,10 @@ abstract class LocalAuthPlatform extends PlatformInterface {
     throw UnimplementedError('isDeviceSupported() has not been implemented.');
   }
 
-  /// Returns false if user change biometric value you must to authorize the new biometric.
-  Future<bool> isValidBiometricAuthorized() async {
+  /// Validate if user change biometric value you must to authorize the new biometric.
+  Future<void> validateBiometricAuthorized() async {
     throw UnimplementedError(
-        'isValidBiometricAuthorized() has not been implemented.');
+        'validateBiometricAuthorized() has not been implemented.');
   }
 
   /// Cancels any authentication currently in progress.

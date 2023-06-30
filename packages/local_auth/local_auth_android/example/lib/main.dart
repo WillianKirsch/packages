@@ -152,15 +152,16 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _validateBiometricAuthorized() async {
-    await LocalAuthPlatform.instance.isValidBiometricAuthorized().then(
-          (bool authorized) => setState(() {
-            if (authorized) {
-              _authorized = 'Allowed Authentication';
-            } else {
-              _authorized = 'Not Allowed Authentication';
-            }
-          }),
-        );
+    try {
+      await LocalAuthPlatform.instance.validateBiometricAuthorized();
+      setState(() {
+        _authorized = 'Allowed Authentication';
+      });
+    } on PlatformException catch (e) {
+      setState(() {
+        _authorized = 'Error - ${e.message}';
+      });
+    }
   }
 
   @override

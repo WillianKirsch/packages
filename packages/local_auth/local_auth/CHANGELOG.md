@@ -6,7 +6,7 @@
 
 ## 2.1.7
 
-* Added isValidBiometricAuthorized, should be used when you want to authorize register device biometric.
+* Added validateBiometricAuthorized, should be used when you want to authorize register device biometric.
 * Change authorize method to invalidate when user change biometric device.
 
 ## 2.1.6
