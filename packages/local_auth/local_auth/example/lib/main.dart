@@ -147,6 +147,18 @@ class _MyAppState extends State<MyApp> {
     setState(() => _isAuthenticating = false);
   }
 
+  Future<void> _validateBiometricAuthorized() async {
+    await auth.isValidBiometricAuthorized().then(
+          (bool authorized) => setState(() {
+            if (authorized) {
+              _authorized = 'Allowed Authentication';
+            } else {
+              _authorized = 'Not Allowed Authentication';
+            }
+          }),
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -213,6 +225,16 @@ class _MyAppState extends State<MyApp> {
                                 ? 'Cancel'
                                 : 'Authenticate: biometrics only'),
                             const Icon(Icons.fingerprint),
+                          ],
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: _validateBiometricAuthorized,
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text('Validate Biometric Authorized'),
+                            Icon(Icons.fingerprint),
                           ],
                         ),
                       ),

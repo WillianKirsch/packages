@@ -190,12 +190,16 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
             KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
             .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
+            // Invalidate the keys if the user has registered a new biometric
+            // credential, such as a new fingerprint. Can call this method only
+            // on Android 7.0 (API level 24) or higher. The variable
+            // "invalidatedByBiometricEnrollment" is true by default.
             .setInvalidatedByBiometricEnrollment(true)
             .setUserAuthenticationRequired(true)
             .build());
 
 
-    SecretKey secretKey =  keyGenerator.generateKey();
+    SecretKey secretKey = keyGenerator.generateKey();
 
     return secretKey;
   }

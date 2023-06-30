@@ -234,9 +234,9 @@ class _MyAppState extends State<MyApp> {
                       ),
                       ElevatedButton(
                         onPressed: _validateBiometricAuthorized,
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: <Widget>[
                             Text('Validate Biometric Authorized'),
                             Icon(Icons.fingerprint),
                           ],
