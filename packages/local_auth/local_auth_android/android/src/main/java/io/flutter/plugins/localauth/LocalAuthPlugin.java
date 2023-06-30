@@ -173,11 +173,11 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
       cipher.init(Cipher.ENCRYPT_MODE, key);
       return  true;
     } catch (KeyPermanentlyInvalidatedException e){
-      completionHandler.onError("NotAuthorizedBiometric", "Key permanently invalidated");
+      completionHandler.complete(Messages.AuthResult.ERROR_LOCKED_OUT_PERMANENTLY);
       return false;
     }
     catch (InvalidKeyException e) {
-      completionHandler.onError("NotAuthorizedBiometric", "Key Expired");
+      completionHandler.complete(Messages.AuthResult.ERROR_LOCKED_OUT_TEMPORARILY);
       return false;
     }
   }
@@ -264,7 +264,7 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
 
       if(keyIsSecure(secretKey,completionHandler)){
             authHelper =
-        new AuthenticationHelper(Ø
+        new AuthenticationHelper(
             lifecycle,
             (FragmentActivity) activity,
             options,
