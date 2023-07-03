@@ -55,6 +55,10 @@ import javax.crypto.SecretKey;
  *
  * <p>Instantiate this in an add to app scenario to gracefully handle activity and context changes.
  */
+
+
+
+@android.support.annotation.RequiresApi(api = Build.VERSION_CODES.M)
 public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthApi {
   private static final int LOCK_REQUEST_CODE = 221;
   private Activity activity;
@@ -168,13 +172,19 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
   }
 
   private boolean keyIsSecure(SecretKey key,AuthCompletionHandler completionHandler) throws NoSuchPaddingException, NoSuchAlgorithmException {
-    Cipher cipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/"
-            + KeyProperties.BLOCK_MODE_CBC + "/"
-            + KeyProperties.ENCRYPTION_PADDING_PKCS7);
+
 
     try {
-      cipher.init(Cipher.ENCRYPT_MODE, key);
-      return  true;
+      Cipher cipher = null;
+      if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+        cipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/"
+                + KeyProperties.BLOCK_MODE_CBC + "/"
+                + KeyProperties.ENCRYPTION_PADDING_PKCS7);
+
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        return  true;
+      }
+
     } catch (KeyPermanentlyInvalidatedException e){
       completionHandler.complete(Messages.AuthResult.NOT_AUTHORIZED_BIOMETRIC);
       return false;
@@ -183,28 +193,35 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
       completionHandler.complete(Messages.AuthResult.NOT_AUTHORIZED_BIOMETRIC);
       return false;
     }
+    return true;
   }
 
   private SecretKey generateKey() throws Exception {
-    KeyGenerator keyGenerator = KeyGenerator.getInstance(
-            KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
-
-    keyGenerator.init(new KeyGenParameterSpec.Builder(KEY_NAME,
-            KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
-            .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
-            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
-            // Invalidate the keys if the user has registered a new biometric
-            // credential, such as a new fingerprint. Can call this method only
-            // on Android 7.0 (API level 24) or higher. The variable
-            // "invalidatedByBiometricEnrollment" is true by default.
-            .setInvalidatedByBiometricEnrollment(true)
-            .setUserAuthenticationRequired(true)
-            .build());
 
 
-    SecretKey secretKey = keyGenerator.generateKey();
+    KeyGenerator keyGenerator = null;
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+      keyGenerator = KeyGenerator.getInstance(
+              KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+      keyGenerator.init(new KeyGenParameterSpec.Builder(KEY_NAME,
+              KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+              .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+              .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
+              // Invalidate the keys if the user has registered a new biometric
+              // credential, such as a new fingerprint. Can call this method only
+              // on Android 7.0 (API level 24) or higher. The variable
+              // "invalidatedByBiometricEnrollment" is true by default.
+              //.setInvalidatedByBiometricEnrollment(true)
+              .setUserAuthenticationRequired(true)
+              .build());
 
-    return secretKey;
+
+      SecretKey secretKey = keyGenerator.generateKey();
+
+      return secretKey;
+    }
+
+    return null;
   }
 
   private SecretKey getSecretKey() throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
