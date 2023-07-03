@@ -53,9 +53,17 @@ class LocalAuthAndroid extends LocalAuthPlatform {
         return true;
       case AuthResult.failure:
         return false;
+      case AuthResult.unableToDeletePermanentKey:
+        throw PlatformException(
+            code: 'unable_to_delete_permanent_key',
+            message: 'unable_to_delete_permanent_key');
+      case AuthResult.notAuthorizedBiometric:
+        throw PlatformException(
+            code: 'unable_to_delete_permanent_key',
+            message: 'unable_to_delete_permanent_key');
       case AuthResult.errorAlreadyInProgress:
         throw PlatformException(
-            code: 'auth_in_progress', message: 'Authentication in progress');
+            code: 'auth_in_progress', message: 'auth_in_progress');
       case AuthResult.errorNoActivity:
         throw PlatformException(
             code: 'no_activity',

@@ -29,7 +29,7 @@ android {
     compileSdkVersion 33
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 23
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -71,4 +71,5 @@ dependencies {
     // TODO(camsim99): org.jetbrains.kotlin:kotlin-bom artifact purpose is to align kotlin stdlib and related code versions.
     // This should be removed when https://github.com/flutter/flutter/issues/125062 is fixed.
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.10"))
+
 }

@@ -50,6 +50,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+
 /**
  * Flutter plugin providing access to local authentication.
  *
@@ -58,7 +59,7 @@ import javax.crypto.SecretKey;
 
 
 
-@android.support.annotation.RequiresApi(api = Build.VERSION_CODES.M)
+
 public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthApi {
   private static final int LOCK_REQUEST_CODE = 221;
   private Activity activity;
@@ -176,14 +177,12 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
 
     try {
       Cipher cipher = null;
-      if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-        cipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/"
-                + KeyProperties.BLOCK_MODE_CBC + "/"
-                + KeyProperties.ENCRYPTION_PADDING_PKCS7);
+      cipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/"
+              + KeyProperties.BLOCK_MODE_CBC + "/"
+              + KeyProperties.ENCRYPTION_PADDING_PKCS7);
 
-        cipher.init(Cipher.ENCRYPT_MODE, key);
-        return  true;
-      }
+      cipher.init(Cipher.ENCRYPT_MODE, key);
+      return  true;
 
     } catch (KeyPermanentlyInvalidatedException e){
       completionHandler.complete(Messages.AuthResult.NOT_AUTHORIZED_BIOMETRIC);
@@ -193,16 +192,28 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
       completionHandler.complete(Messages.AuthResult.NOT_AUTHORIZED_BIOMETRIC);
       return false;
     }
-    return true;
   }
 
   private SecretKey generateKey() throws Exception {
 
 
     KeyGenerator keyGenerator = null;
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-      keyGenerator = KeyGenerator.getInstance(
-              KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+    keyGenerator = KeyGenerator.getInstance(
+            KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+
+    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+      keyGenerator.init(new KeyGenParameterSpec.Builder(KEY_NAME,
+              KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
+              .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+              .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
+              // Invalidate the keys if the user has registered a new biometric
+              // credential, such as a new fingerprint. Can call this method only
+              // on Android 7.0 (API level 24) or higher. The variable
+              // "invalidatedByBiometricEnrollment" is true by default.
+              .setInvalidatedByBiometricEnrollment(true)
+              .setUserAuthenticationRequired(true)
+              .build());
+    }else{
       keyGenerator.init(new KeyGenParameterSpec.Builder(KEY_NAME,
               KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
               .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
@@ -214,14 +225,11 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
               //.setInvalidatedByBiometricEnrollment(true)
               .setUserAuthenticationRequired(true)
               .build());
-
-
-      SecretKey secretKey = keyGenerator.generateKey();
-
-      return secretKey;
     }
 
-    return null;
+    SecretKey secretKey = keyGenerator.generateKey();
+
+    return secretKey;
   }
 
   private SecretKey getSecretKey() throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
@@ -313,7 +321,7 @@ public class LocalAuthPlugin implements FlutterPlugin, ActivityAware, LocalAuthA
   @VisibleForTesting
   public boolean isDeviceSecure() {
     if (keyguardManager == null) return false;
-    return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && keyguardManager.isDeviceSecure());
+    return (keyguardManager.isDeviceSecure());
   }
 
   private boolean canAuthenticateWithBiometrics() {
